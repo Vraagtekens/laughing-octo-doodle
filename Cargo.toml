@@ -1,0 +1,17 @@
+[workspace]
+members = [
+    "crates/sketchbook",
+    "sketches/default_template",
+    "sketches/mouse_trail",
+    "sketches/render_texture_template",
+    "sketches/sprite_grid_trail",
+]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+
+[workspace.dependencies]
+bevy = "0.18.1"
+sketchbook = { path = "crates/sketchbook" }

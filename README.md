@@ -74,7 +74,7 @@ cargo run -p mouse_trail
 
 ### `sprite_grid_trail`
 
-A jittered grid of Pokémon item sprites from `assets/pokemon` moves as one loose field and paints into a persistent render texture. The spacing has random offsets so it does not look perfectly tiled, and the trail stays on screen without spawning endless stamp entities. Press `H` to toggle the FPS readout.
+A zoomed-in, jittered grid of image sprites loaded from the configured asset folder, such as `assets/pokemon` or `assets/cats`, paints into a persistent render texture. It drifts on its own; arrow keys temporarily take over the field motion, then the automatic drift continues from wherever you left it. Whole rows/columns wrap only after leaving the visible camera area, re-enter just offscreen on the opposite side, and pick fresh random sprites. Press `H` to toggle the FPS readout.
 
 Run it from the repo root:
 

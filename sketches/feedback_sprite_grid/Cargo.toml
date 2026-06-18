@@ -1,0 +1,8 @@
+[package]
+edition.workspace = true
+name = "feedback_sprite_grid"
+version.workspace = true
+
+[dependencies]
+bevy.workspace = true
+sketchbook.workspace = true

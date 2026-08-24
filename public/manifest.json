@@ -1,0 +1,55 @@
+[
+  {
+    "id": "default_template",
+    "name": "Default Template",
+    "summary": "A tiny Bevy shader square used as the baseline WebAssembly sketch.",
+    "url": "./default_template/",
+    "embedUrl": "./default_template/",
+    "crate": "default_template",
+    "assetDir": "assets"
+  },
+  {
+    "id": "mouse_trail",
+    "name": "Mouse Trail",
+    "summary": "A small cursor-following square that stamps a fading trail through the scene.",
+    "url": "./mouse_trail/",
+    "embedUrl": "./mouse_trail/",
+    "crate": "mouse_trail"
+  },
+  {
+    "id": "render_texture_template",
+    "name": "Render Texture Template",
+    "summary": "A layered render-texture sketch with shader-driven post processing.",
+    "url": "./render_texture_template/",
+    "embedUrl": "./render_texture_template/",
+    "crate": "render_texture_template",
+    "assetDir": "assets"
+  },
+  {
+    "id": "sprite_grid_trail",
+    "name": "Sprite Grid Trail",
+    "summary": "A drifting image grid rendered into a feedback surface.",
+    "url": "./sprite_grid_trail/",
+    "embedUrl": "./sprite_grid_trail/",
+    "crate": "sprite_grid_trail",
+    "assetDir": "../../assets"
+  },
+  {
+    "id": "feedback_sprite_grid",
+    "name": "Feedback Sprite Grid",
+    "summary": "A controllable feedback loop made from small moving sprite objects.",
+    "url": "./feedback_sprite_grid/",
+    "embedUrl": "./feedback_sprite_grid/",
+    "crate": "feedback_sprite_grid",
+    "assetDir": "../../assets"
+  },
+  {
+    "id": "slime_mold_loop",
+    "name": "Slime Mold Loop",
+    "summary": "A GPU-generated Bevy slime mold colony with a deterministic seamless loop.",
+    "url": "./slime_mold_loop/",
+    "embedUrl": "./slime_mold_loop/",
+    "crate": "slime_mold_loop",
+    "assetDir": "assets"
+  }
+]

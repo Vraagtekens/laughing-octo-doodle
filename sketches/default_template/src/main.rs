@@ -1,11 +1,11 @@
 use bevy::{
-    asset::AssetPlugin,
     prelude::*,
     reflect::TypePath,
     render::render_resource::{AsBindGroup, ShaderType},
     shader::ShaderRef,
     sprite_render::{Material2d, Material2dPlugin},
 };
+use sketchbook::{local_asset_path, sketch_plugins};
 
 const WIDTH: u32 = 1280;
 const HEIGHT: u32 = 720;
@@ -14,24 +14,21 @@ const SQUARE_SHADER: &str = "shaders/square.wgsl";
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins
-                .set(AssetPlugin {
-                    file_path: format!("{}/assets", env!("CARGO_MANIFEST_DIR")),
-                    ..default()
-                })
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "Default Sketch Template".into(),
-                        resolution: (WIDTH, HEIGHT).into(),
-                        ..default()
-                    }),
-                    ..default()
-                }),
+            default_plugins(),
             Material2dPlugin::<SquareMaterial>::default(),
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .add_systems(Startup, setup)
         .run();
+}
+
+fn default_plugins() -> bevy::app::PluginGroupBuilder {
+    sketch_plugins(
+        "Default Sketch Template",
+        WIDTH,
+        HEIGHT,
+        local_asset_path(env!("CARGO_MANIFEST_DIR")),
+    )
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]

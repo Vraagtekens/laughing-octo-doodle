@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use sketchbook::FpsOverlayPlugin;
+use sketchbook::{FpsOverlayPlugin, local_asset_path, sketch_plugins};
 
 const WIDTH: u32 = 1280;
 const HEIGHT: u32 = 720;
@@ -9,14 +9,12 @@ const TRAIL_STEP_SECONDS: f32 = 0.025;
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Mouse Trail".into(),
-                    resolution: (WIDTH, HEIGHT).into(),
-                    ..default()
-                }),
-                ..default()
-            }),
+            sketch_plugins(
+                "Mouse Trail",
+                WIDTH,
+                HEIGHT,
+                local_asset_path(env!("CARGO_MANIFEST_DIR")),
+            ),
             FpsOverlayPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))

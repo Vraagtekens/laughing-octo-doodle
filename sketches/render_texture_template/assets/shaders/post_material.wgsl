@@ -6,6 +6,7 @@ struct PostParams {
     feedback_mix: f32,
     vignette: f32,
     chroma: f32,
+    _padding: vec2<f32>,
 };
 
 @group(#{MATERIAL_BIND_GROUP}) @binding(0)

@@ -1,0 +1,11 @@
+{
+  "name": "laughing-octo-doodle",
+  "private": true,
+  "scripts": {
+    "prepare:sketches": "./scripts/prepare-sketches.sh",
+    "build:sketch": "./scripts/build-sketch.sh",
+    "build:all": "./scripts/build-all.sh",
+    "serve:sketch": "./scripts/serve-sketch.sh",
+    "serve": "./scripts/serve-dist.sh"
+  }
+}

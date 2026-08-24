@@ -1,5 +1,4 @@
 use bevy::{
-    asset::AssetPlugin,
     camera::{RenderTarget, visibility::RenderLayers},
     core_pipeline::tonemapping::{DebandDither, Tonemapping},
     post_process::bloom::Bloom,
@@ -13,6 +12,7 @@ use bevy::{
     sprite_render::{AlphaMode2d, Material2d, Material2dPlugin},
     window::WindowResized,
 };
+use sketchbook::{local_asset_path, sketch_plugins};
 
 const SKETCH_SHADER: &str = "shaders/sketch_material.wgsl";
 const POST_SHADER: &str = "shaders/post_material.wgsl";
@@ -26,19 +26,12 @@ const SCREEN_LAYER: RenderLayers = RenderLayers::layer(1);
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins
-                .set(AssetPlugin {
-                    file_path: format!("{}/assets", env!("CARGO_MANIFEST_DIR")),
-                    ..default()
-                })
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "Render Texture Template".into(),
-                        resolution: (CANVAS_WIDTH, CANVAS_HEIGHT).into(),
-                        ..default()
-                    }),
-                    ..default()
-                }),
+            sketch_plugins(
+                "Render Texture Template",
+                CANVAS_WIDTH,
+                CANVAS_HEIGHT,
+                local_asset_path(env!("CARGO_MANIFEST_DIR")),
+            ),
             Material2dPlugin::<SketchMaterial>::default(),
             Material2dPlugin::<PostMaterial>::default(),
         ))
@@ -71,6 +64,7 @@ struct SketchParams {
     color_b: LinearRgba,
     time: f32,
     index: f32,
+    _padding: Vec2,
 }
 
 impl Material2d for SketchMaterial {
@@ -99,6 +93,7 @@ struct PostParams {
     feedback_mix: f32,
     vignette: f32,
     chroma: f32,
+    _padding: Vec2,
 }
 
 impl Material2d for PostMaterial {
@@ -154,6 +149,7 @@ fn setup(
                 feedback_mix: 0.62,
                 vignette: 0.42,
                 chroma: 1.35,
+                _padding: Vec2::ZERO,
             },
         })),
         SCREEN_LAYER,
@@ -172,7 +168,7 @@ fn render_texture(width: u32, height: u32) -> Image {
             label: Some("creative_render_texture"),
             size,
             dimension: TextureDimension::D2,
-            format: TextureFormat::Bgra8UnormSrgb,
+            format: TextureFormat::Rgba8UnormSrgb,
             mip_level_count: 1,
             sample_count: 1,
             usage: TextureUsages::TEXTURE_BINDING
@@ -225,6 +221,7 @@ fn spawn_sketch(
                     color_b,
                     time: 0.0,
                     index: i as f32,
+                    _padding: Vec2::ZERO,
                 },
             })),
             Transform::from_xyz(0.0, 0.0, t * 20.0)

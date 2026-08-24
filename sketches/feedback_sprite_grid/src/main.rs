@@ -1,9 +1,13 @@
+#[cfg(not(target_arch = "wasm32"))]
 use std::{fs, path::Path};
 
-use bevy::{asset::AssetPlugin, camera::visibility::RenderLayers, prelude::*};
+use bevy::{camera::visibility::RenderLayers, prelude::*};
 use sketchbook::{
-    FpsOverlayPlugin,
-    feedback_loop::{FeedbackLoopPlugin, FeedbackLoopSettings, spawn_feedback_loop},
+    SketchControls, SketchControlsPlugin,
+    feedback_loop::{
+        FeedbackLoopEffect, FeedbackLoopPlugin, FeedbackLoopSettings, spawn_feedback_loop,
+    },
+    sketch_plugins, workspace_asset_path,
 };
 
 const WIDTH: u32 = 1280;
@@ -24,7 +28,12 @@ const GRID_SPEED: f32 = 320.0;
 const WRAP_EXIT_MARGIN: Vec2 = Vec2::new(SPRITE_SIZE * 1.8, SPRITE_SIZE * 1.8);
 const WRAP_ENTER_MARGIN: Vec2 = Vec2::new(SPRITE_SIZE * 1.4, SPRITE_SIZE * 1.4);
 const SPRITE_ASSET_FOLDER: &str = "pokemon";
+#[cfg(not(target_arch = "wasm32"))]
 const SPRITE_ASSET_EXTENSIONS: [&str; 5] = ["png", "jpg", "jpeg", "gif", "webp"];
+const CONTROL_FEEDBACK_SCALE: &str = "feedback_scale";
+const CONTROL_FEEDBACK_ALPHA: &str = "feedback_alpha";
+const CONTROL_SPRITE_SIZE: &str = "sprite_size";
+const CONTROL_GRID_SPEED: &str = "grid_speed";
 
 const PAINT_LAYER: RenderLayers = RenderLayers::layer(0);
 const SCREEN_LAYER: RenderLayers = RenderLayers::layer(1);
@@ -32,26 +41,33 @@ const SCREEN_LAYER: RenderLayers = RenderLayers::layer(1);
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins
-                .set(AssetPlugin {
-                    file_path: asset_root(),
-                    ..default()
-                })
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "Feedback Sprite Grid".into(),
-                        resolution: (WIDTH, HEIGHT).into(),
-                        ..default()
-                    }),
-                    ..default()
-                }),
-            FpsOverlayPlugin,
+            sketch_plugins("Feedback Sprite Grid", WIDTH, HEIGHT, asset_root()),
+            SketchControlsPlugin::new("Feedback Sprite Grid")
+                .with_slider(
+                    CONTROL_FEEDBACK_SCALE,
+                    "feedback scale",
+                    FEEDBACK_SCALE,
+                    0.90..=1.0,
+                )
+                .with_slider(
+                    CONTROL_FEEDBACK_ALPHA,
+                    "trail fade",
+                    FEEDBACK_ALPHA,
+                    0.80..=1.0,
+                )
+                .with_slider(
+                    CONTROL_SPRITE_SIZE,
+                    "sprite size",
+                    SPRITE_SIZE,
+                    24.0..=160.0,
+                )
+                .with_slider(CONTROL_GRID_SPEED, "grid speed", GRID_SPEED, 0.0..=800.0),
             FeedbackLoopPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
         .insert_resource(GridMotion::default())
         .add_systems(Startup, setup)
-        .add_systems(Update, move_sprites)
+        .add_systems(Update, (move_sprites, update_feedback_effect))
         .run();
 }
 
@@ -81,6 +97,7 @@ struct MovingSprite {
     home: Vec2,
     column_x: f32,
     row_y: f32,
+    size_factor: f32,
     phase: f32,
     spin: f32,
 }
@@ -120,7 +137,8 @@ fn setup(
                 signed_hash(index as f32 + 12.0) * JITTER.x,
                 signed_hash(index as f32 + 77.0) * JITTER.y,
             );
-            let size = SPRITE_SIZE * (0.72 + hash(index as f32 + 31.0) * 0.58);
+            let size_factor = 0.72 + hash(index as f32 + 31.0) * 0.58;
+            let size = SPRITE_SIZE * size_factor;
             let phase = hash(index as f32 + 101.0) * std::f32::consts::TAU;
             let spin = signed_hash(index as f32 + 251.0) * 0.18;
             let home = centered + jitter;
@@ -137,6 +155,7 @@ fn setup(
                     home,
                     column_x: centered.x,
                     row_y: centered.y,
+                    size_factor,
                     phase,
                     spin,
                 },
@@ -150,6 +169,7 @@ fn move_sprites(
     time: Res<Time>,
     keys: Res<ButtonInput<KeyCode>>,
     images: Res<SpriteImages>,
+    controls: Res<SketchControls>,
     mut motion: ResMut<GridMotion>,
     mut query: Query<(&mut MovingSprite, &mut Sprite, &mut Transform)>,
 ) {
@@ -173,12 +193,16 @@ fn move_sprites(
     motion.previous_auto_offset = auto_offset;
 
     if direction != Vec2::ZERO {
-        motion.offset += direction.normalize() * GRID_SPEED * time.delta_secs();
+        motion.offset +=
+            direction.normalize() * controls.value(CONTROL_GRID_SPEED) * time.delta_secs();
     } else {
         motion.offset += auto_delta;
     }
 
     for (mut moving_sprite, mut sprite, mut transform) in &mut query {
+        sprite.custom_size = Some(Vec2::splat(
+            controls.value(CONTROL_SPRITE_SIZE) * moving_sprite.size_factor,
+        ));
         let local_drift = Vec2::new(
             (t * 0.9 + moving_sprite.phase).sin() * 10.0,
             (t * 0.7 + moving_sprite.phase).cos() * 8.0,
@@ -199,6 +223,15 @@ fn move_sprites(
         transform.rotation =
             Quat::from_rotation_z((t + moving_sprite.phase).sin() * moving_sprite.spin);
     }
+}
+
+fn update_feedback_effect(
+    controls: Res<SketchControls>,
+    mut effect: Single<(&mut Sprite, &mut Transform), With<FeedbackLoopEffect>>,
+) {
+    let (sprite, transform) = &mut *effect;
+    sprite.color = Color::srgba(1.0, 1.0, 1.0, controls.value(CONTROL_FEEDBACK_ALPHA));
+    transform.scale = Vec3::splat(controls.value(CONTROL_FEEDBACK_SCALE));
 }
 
 fn automatic_offset(t: f32) -> Vec2 {
@@ -264,9 +297,18 @@ fn wrap_sprite_home(
 }
 
 fn asset_root() -> String {
-    format!("{}/../../assets", env!("CARGO_MANIFEST_DIR"))
+    workspace_asset_path(env!("CARGO_MANIFEST_DIR"))
 }
 
+#[cfg(target_arch = "wasm32")]
+fn sprite_asset_paths() -> Vec<String> {
+    POKEMON_ASSETS
+        .iter()
+        .map(|asset| format!("{SPRITE_ASSET_FOLDER}/{asset}"))
+        .collect()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn sprite_asset_paths() -> Vec<String> {
     let sprite_dir = Path::new(&asset_root()).join(SPRITE_ASSET_FOLDER);
     let mut paths = fs::read_dir(&sprite_dir)
@@ -303,6 +345,18 @@ fn sprite_asset_paths() -> Vec<String> {
     }
     paths
 }
+
+#[cfg(target_arch = "wasm32")]
+const POKEMON_ASSETS: &[&str] = &[
+    "awakening.png",
+    "calcium.png",
+    "leftovers.png",
+    "max-revive.png",
+    "moomoo-milk.png",
+    "normal.png",
+    "rare-candy.png",
+    "revival-herb.png",
+];
 
 fn random_index(index: usize, len: usize) -> usize {
     ((hash(index as f32 + 911.0) * len as f32).floor() as usize).min(len - 1)

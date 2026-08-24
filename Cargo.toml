@@ -5,6 +5,7 @@ members = [
     "sketches/feedback_sprite_grid",
     "sketches/mouse_trail",
     "sketches/render_texture_template",
+    "sketches/slime_mold_loop",
     "sketches/sprite_grid_trail",
 ]
 resolver = "3"
@@ -15,4 +16,5 @@ version = "0.1.0"
 
 [workspace.dependencies]
 bevy = "0.18.1"
+bevy_egui = "0.39.1"
 sketchbook = { path = "crates/sketchbook" }

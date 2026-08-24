@@ -6,6 +6,9 @@ use bevy::{
     },
 };
 
+#[cfg(not(target_arch = "wasm32"))]
+use crate::RecordingSource;
+
 pub struct FeedbackLoopPlugin;
 
 impl Plugin for FeedbackLoopPlugin {
@@ -89,6 +92,9 @@ struct FeedbackLoopState {
 #[derive(Component)]
 struct FeedbackLoopPaintCamera;
 
+#[derive(Component)]
+pub struct FeedbackLoopEffect;
+
 pub fn spawn_feedback_loop(
     commands: &mut Commands,
     images: &mut Assets<Image>,
@@ -141,6 +147,7 @@ pub fn spawn_feedback_loop(
             },
             Transform::from_xyz(0.0, 0.0, -100.0).with_scale(Vec3::splat(settings.feedback_scale)),
             settings.paint_layer.clone(),
+            FeedbackLoopEffect,
         ))
         .id();
 
@@ -163,6 +170,8 @@ pub fn spawn_feedback_loop(
         feedback_sprite,
         screen_sprite,
     });
+    #[cfg(not(target_arch = "wasm32"))]
+    commands.insert_resource(RecordingSource::Image(textures[target_index].clone()));
 
     FeedbackLoopCanvas {
         paint_layer: settings.paint_layer.clone(),
@@ -173,6 +182,7 @@ pub fn spawn_feedback_loop(
 
 fn advance_feedback_loop(
     state: Option<ResMut<FeedbackLoopState>>,
+    #[cfg(not(target_arch = "wasm32"))] recording_source: Option<ResMut<RecordingSource>>,
     mut targets: Query<&mut RenderTarget, With<FeedbackLoopPaintCamera>>,
     mut sprites: Query<&mut Sprite>,
 ) {
@@ -193,6 +203,10 @@ fn advance_feedback_loop(
     if let Ok(mut sprite) = sprites.get_mut(state.screen_sprite) {
         sprite.image = state.textures[target_index].clone();
     }
+    #[cfg(not(target_arch = "wasm32"))]
+    if let Some(mut recording_source) = recording_source {
+        *recording_source = RecordingSource::Image(state.textures[target_index].clone());
+    }
 }
 
 fn feedback_texture(width: u32, height: u32, label: &'static str) -> Image {
@@ -206,7 +220,7 @@ fn feedback_texture(width: u32, height: u32, label: &'static str) -> Image {
             label: Some(label),
             size,
             dimension: TextureDimension::D2,
-            format: TextureFormat::Bgra8UnormSrgb,
+            format: TextureFormat::Rgba8UnormSrgb,
             mip_level_count: 1,
             sample_count: 1,
             usage: TextureUsages::TEXTURE_BINDING

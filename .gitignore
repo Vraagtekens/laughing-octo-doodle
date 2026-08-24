@@ -1,2 +1,6 @@
 /target
+/recordings
+/.trunk
+/dist
+/sketches/*/dist
 ._*

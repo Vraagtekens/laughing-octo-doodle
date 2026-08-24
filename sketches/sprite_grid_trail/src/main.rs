@@ -1,14 +1,14 @@
+#[cfg(not(target_arch = "wasm32"))]
 use std::{fs, path::Path};
 
 use bevy::{
-    asset::AssetPlugin,
     camera::{RenderTarget, visibility::RenderLayers},
     prelude::*,
     render::render_resource::{
         Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
     },
 };
-use sketchbook::FpsOverlayPlugin;
+use sketchbook::{FpsOverlayPlugin, sketch_plugins, workspace_asset_path};
 
 const WIDTH: u32 = 1280;
 const HEIGHT: u32 = 720;
@@ -26,6 +26,7 @@ const GRID_SPEED: f32 = 320.0;
 const WRAP_EXIT_MARGIN: Vec2 = Vec2::new(SPRITE_SIZE * 1.8, SPRITE_SIZE * 1.8);
 const WRAP_ENTER_MARGIN: Vec2 = Vec2::new(SPRITE_SIZE * 1.4, SPRITE_SIZE * 1.4);
 const SPRITE_ASSET_FOLDER: &str = "pokemon";
+#[cfg(not(target_arch = "wasm32"))]
 const SPRITE_ASSET_EXTENSIONS: [&str; 5] = ["png", "jpg", "jpeg", "gif", "webp"];
 
 const PAINT_LAYER: RenderLayers = RenderLayers::layer(0);
@@ -34,19 +35,7 @@ const SCREEN_LAYER: RenderLayers = RenderLayers::layer(1);
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins
-                .set(AssetPlugin {
-                    file_path: asset_root(),
-                    ..default()
-                })
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "Sprite Grid Trail".into(),
-                        resolution: (WIDTH, HEIGHT).into(),
-                        ..default()
-                    }),
-                    ..default()
-                }),
+            sketch_plugins("Sprite Grid Trail", WIDTH, HEIGHT, asset_root()),
             FpsOverlayPlugin,
         ))
         .insert_resource(ClearColor(Color::BLACK))
@@ -178,7 +167,7 @@ fn paint_texture(width: u32, height: u32) -> Image {
             label: Some("sprite_grid_paint_texture"),
             size,
             dimension: TextureDimension::D2,
-            format: TextureFormat::Bgra8UnormSrgb,
+            format: TextureFormat::Rgba8UnormSrgb,
             mip_level_count: 1,
             sample_count: 1,
             usage: TextureUsages::TEXTURE_BINDING
@@ -310,9 +299,18 @@ fn wrap_sprite_home(
 }
 
 fn asset_root() -> String {
-    format!("{}/../../assets", env!("CARGO_MANIFEST_DIR"))
+    workspace_asset_path(env!("CARGO_MANIFEST_DIR"))
 }
 
+#[cfg(target_arch = "wasm32")]
+fn sprite_asset_paths() -> Vec<String> {
+    POKEMON_ASSETS
+        .iter()
+        .map(|asset| format!("{SPRITE_ASSET_FOLDER}/{asset}"))
+        .collect()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn sprite_asset_paths() -> Vec<String> {
     let sprite_dir = Path::new(&asset_root()).join(SPRITE_ASSET_FOLDER);
     let mut paths = fs::read_dir(&sprite_dir)
@@ -349,6 +347,18 @@ fn sprite_asset_paths() -> Vec<String> {
     }
     paths
 }
+
+#[cfg(target_arch = "wasm32")]
+const POKEMON_ASSETS: &[&str] = &[
+    "awakening.png",
+    "calcium.png",
+    "leftovers.png",
+    "max-revive.png",
+    "moomoo-milk.png",
+    "normal.png",
+    "rare-candy.png",
+    "revival-herb.png",
+];
 
 fn random_index(index: usize, len: usize) -> usize {
     ((hash(index as f32 + 911.0) * len as f32).floor() as usize).min(len - 1)

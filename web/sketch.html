@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="__SUMMARY__" />
+    <title>__TITLE__</title>
+__ASSET_LINKS__
+    <link data-trunk rel="rust" href="__CARGO_MANIFEST__" data-wasm-opt="z" />
+    <style>
+      html,
+      body {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #050504;
+      }
+
+      body {
+        min-height: 100dvh;
+      }
+
+      #bevy-canvas {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100dvh;
+        display: block;
+        outline: none;
+        touch-action: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="bevy-canvas"></canvas>
+  </body>
+</html>

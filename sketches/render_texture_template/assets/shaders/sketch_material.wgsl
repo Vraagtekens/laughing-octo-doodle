@@ -5,6 +5,7 @@ struct SketchParams {
     color_b: vec4<f32>,
     time: f32,
     index: f32,
+    _padding: vec2<f32>,
 };
 
 @group(#{MATERIAL_BIND_GROUP}) @binding(0)

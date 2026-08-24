@@ -116,7 +116,7 @@ fn feedback_texture(width: u32, height: u32, label: &'static str) -> Image {
             label: Some(label),
             size,
             dimension: TextureDimension::D2,
-            format: TextureFormat::Bgra8UnormSrgb,
+            format: TextureFormat::Rgba8UnormSrgb,
             mip_level_count: 1,
             sample_count: 1,
             usage: TextureUsages::TEXTURE_BINDING

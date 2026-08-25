@@ -16,5 +16,5 @@ cp "$ROOT/web/index.html" "$DIST/index.html"
 cp "$MANIFEST" "$DIST/manifest.json"
 
 jq -r '.[].id' "$MANIFEST" | while IFS= read -r sketch; do
-  "$ROOT/scripts/build-sketch.sh" "$sketch"
+  bash "$ROOT/scripts/build-sketch.sh" "$sketch"
 done

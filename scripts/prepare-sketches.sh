@@ -10,5 +10,5 @@ if ! command -v jq >/dev/null 2>&1; then
 fi
 
 jq -r '.[].id' "$MANIFEST" | while IFS= read -r sketch; do
-  "$ROOT/scripts/write-sketch-page.sh" "$sketch"
+  bash "$ROOT/scripts/write-sketch-page.sh" "$sketch"
 done

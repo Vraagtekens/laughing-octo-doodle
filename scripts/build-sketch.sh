@@ -14,7 +14,7 @@ if ! command -v trunk >/dev/null 2>&1; then
   exit 1
 fi
 
-"$ROOT/scripts/write-sketch-page.sh" "$SKETCH"
+bash "$ROOT/scripts/write-sketch-page.sh" "$SKETCH"
 
 ID="$(jq -r --arg id "$SKETCH" '.[] | select(.id == $id or .crate == $id) | .id' "$ROOT/public/manifest.json")"
 ENTRY="$ROOT/.trunk/$ID/index.html"

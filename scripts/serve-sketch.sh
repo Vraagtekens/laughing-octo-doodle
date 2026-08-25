@@ -10,7 +10,7 @@ if [[ -z "$SKETCH" ]]; then
 fi
 
 shift || true
-"$ROOT/scripts/write-sketch-page.sh" "$SKETCH"
+bash "$ROOT/scripts/write-sketch-page.sh" "$SKETCH"
 
 ID="$(jq -r --arg id "$SKETCH" '.[] | select(.id == $id or .crate == $id) | .id' "$ROOT/public/manifest.json")"
 cd "$ROOT"

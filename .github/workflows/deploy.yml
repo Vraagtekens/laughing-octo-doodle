@@ -33,7 +33,9 @@ jobs:
         id: cache-trunk
         uses: actions/cache@v4
         with:
-          path: ~/.cargo/bin/trunk
+          path: |
+            ~/.cargo/bin/trunk
+            ~/.cache/dev.trunkrs.trunk
           key: trunk-0.20.3-${{ runner.os }}
 
       - name: Install Trunk

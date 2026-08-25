@@ -29,8 +29,19 @@ jobs:
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
+      - name: Cache Trunk
+        id: cache-trunk
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/trunk
+          key: trunk-0.20.3-${{ runner.os }}
+
       - name: Install Trunk
+        if: steps.cache-trunk.outputs.cache-hit != 'true'
         run: cargo install trunk --version 0.20.3 --locked
+
+      - name: Check Trunk
+        run: trunk --version
 
       - name: Build sketches
         run: bash ./scripts/build-all.sh

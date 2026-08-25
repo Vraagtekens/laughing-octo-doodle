@@ -46,7 +46,11 @@ jobs:
         run: trunk --version
 
       - name: Build sketches
-        run: bash ./scripts/build-all.sh
+        run: |
+          mkdir -p dist
+          cp web/index.html dist/index.html
+          cp public/manifest.json dist/manifest.json
+          bash ./scripts/build-sketch.sh default_template
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
